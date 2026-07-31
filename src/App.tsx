@@ -4,7 +4,7 @@ import {
   Bot, CheckCheck, ChevronDown, ChevronRight,
   FileText, Flame, Loader2,
   Pause, Play, RefreshCw, Shield, ShieldAlert, ShieldOff,
-  Sparkles, Terminal, Zap,
+  Sparkles, Zap,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -19,7 +19,7 @@ import {
   type OverseerChime, type PromptExchange, type RunPhase, type VerdictLabel,
   type SimStep,
 } from "@/data/redteam-simulation";
-import { PERSONA_LIST, PERSONAS, type PersonaId } from "@/data/personas";
+import { PERSONA_LIST, PERSONAS, type PersonaId, type TargetPersona } from "@/data/personas";
 import { MEDIBOT_SCRIPT } from "@/data/sim-medibot";
 import { LEXAI_SCRIPT }   from "@/data/sim-lexai";
 import { CODEPILOT_SCRIPT } from "@/data/sim-codepilot";
@@ -32,6 +32,53 @@ function getScript(personaId: PersonaId): SimStep[] {
     case "codepilot": return CODEPILOT_SCRIPT;
     default:          return SIMULATION_SCRIPT; // aria
   }
+}
+
+// Target Selector Component
+interface TargetSelectorProps {
+  selectedId: PersonaId;
+  onSelect: (id: PersonaId) => void;
+  disabled?: boolean;
+}
+
+function TargetSelector({ selectedId, onSelect, disabled }: TargetSelectorProps) {
+  return (
+    <div className="space-y-4">
+      <div className="text-center space-y-2">
+        <h3 className="font-display text-lg font-semibold">Choose Target System</h3>
+        <p className="text-sm text-muted-foreground">Select an AI system to red team</p>
+      </div>
+      
+      <div className="grid gap-3">
+        {PERSONA_LIST.map(persona => (
+          <button
+            key={persona.id}
+            onClick={() => onSelect(persona.id)}
+            disabled={disabled}
+            className={cn(
+              "p-4 rounded-lg border-2 text-left transition-all",
+              "hover:border-fuego-300 hover:bg-fuego-50/50",
+              selectedId === persona.id 
+                ? "border-fuego-500 bg-fuego-50" 
+                : "border-border",
+              disabled && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <h4 className="font-semibold">{persona.name}</h4>
+                <p className="text-sm text-muted-foreground">{persona.org}</p>
+                <p className="text-xs text-muted-foreground">{persona.tagline}</p>
+              </div>
+              <Badge variant={selectedId === persona.id ? "default" : "secondary"} className="ml-2">
+                {persona.model}
+              </Badge>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ─── Static lookup tables ────────────────────────────────────────────────────
@@ -214,8 +261,6 @@ function AgentRow({ agent, status, isTarget = false }: {
 }
 
 // ─── Target Persona Card ──────────────────────────────────────────────────────
-
-import type { TargetPersona } from "@/data/personas";
 
 function PersonaCard({ persona }: { persona: TargetPersona }) {
   const [open, setOpen] = useState(false);
@@ -561,9 +606,10 @@ function AttackChainTimeline({ exchanges }: { exchanges: PromptExchange[] }) {
 
 // ─── FinalReport v2 ──────────────────────────────────────────────────────────
 
-function FinalReport({ exchanges, breakEvents }: {
+function FinalReport({ exchanges, breakEvents, persona }: {
   exchanges: PromptExchange[];
   breakEvents: BreakEvent[];
+  persona: TargetPersona;
 }) {
   const maxScore = Math.max(...exchanges.map(e => e.breakScore), 0);
   const safeRounds = exchanges.filter(e => e.verdict === "safe").length;
@@ -581,8 +627,8 @@ function FinalReport({ exchanges, breakEvents }: {
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-fuego-600">Overseer Report</p>
-          <h2 className="font-display text-xl font-bold">Red Team Session — {TARGET_PERSONA.name} / {TARGET_PERSONA.org}</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Model: {TARGET_PERSONA.model} · {exchanges.length} rounds · {breakEvents.length} confirmed breaks</p>
+          <h2 className="font-display text-xl font-bold">Red Team Session — {persona.name} / {persona.org}</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Model: {persona.model} · {exchanges.length} rounds · {breakEvents.length} confirmed breaks</p>
         </div>
       </div>
 
@@ -679,6 +725,20 @@ export default function App() {
   const [newBreakFlash, setNewBreakFlash] = useState(false);
   const [selectedPersonaId, setSelectedPersonaId] = useState<PersonaId>("aria");
 
+  // Persona selector function
+  const selectPersona = (id: PersonaId) => {
+    if (!running) {
+      setSelectedPersonaId(id);
+      // Reset state when changing persona
+      setPhase("ready");
+      setStepIdx(0);
+      setExchanges([]);
+      setBreakEvents([]);
+      setChimes([]);
+      setStatuses(INIT_STATUSES);
+    }
+  };
+
   const timeoutRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const feedEndRef    = useRef<HTMLDivElement>(null);
   const feedScrollRef = useRef<HTMLDivElement>(null);
@@ -750,10 +810,6 @@ export default function App() {
     setStatuses(INIT_STATUSES); setExchanges([]); setBreakEvents([]);
     setChimes([]); setActiveTab("feed"); setNewBreakFlash(false);
     prevCountRef.current = 0;
-  }
-  function selectPersona(id: PersonaId) {
-    resetRun();
-    setSelectedPersonaId(id);
   }
 
   const isComplete = phase === "complete";
@@ -907,7 +963,7 @@ export default function App() {
               </div>
             )}
             {activeTab === "report" && isComplete && (
-              <FinalReport exchanges={exchanges} breakEvents={breakEvents} />
+              <FinalReport exchanges={exchanges} breakEvents={breakEvents} persona={activePersona} />
             )}
           </div>
         </main>
