@@ -203,39 +203,54 @@ export default function App() {
         </div>
 
         {/* Feed */}
-        <div ref={feedRef} style={{ maxHeight: "calc(100vh - 200px)", overflowY: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div ref={feedRef} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <AnimatePresence initial={false}>
             {exchanges.map(ex => (
-              <motion.div key={ex.id} initial={{ opacity: 0, y: 16, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} style={{ background: "#1f1f1d", border: "1px solid #2e2d2a", borderRadius: 10, overflow: "hidden" }}>
+              <motion.div key={ex.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} style={{ background: "#1f1f1d", border: "1px solid #2e2d2a", borderRadius: 10 }}>
                 {/* Header */}
-                <div style={{ padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #2e2d2a" }}>
+                <div style={{ padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #2e2d2a" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ width: 28, height: 28, borderRadius: 7, background: "#ff620018", display: "grid", placeItems: "center", fontSize: 10, fontWeight: 800, color: "#ff6200" }}>{ex.round}</span>
-                    <div><div style={{ fontSize: 11, fontWeight: 650 }}>{ex.techniqueUsed}</div><div style={{ fontSize: 9, color: "#77736c", marginTop: 2 }}>{ex.promptAuthor} · {ex.phase}</div></div>
+                    <span style={{ width: 30, height: 30, borderRadius: 7, background: "#ff620018", display: "grid", placeItems: "center", fontSize: 11, fontWeight: 800, color: "#ff6200", flexShrink: 0 }}>{ex.round}</span>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 650, color: "#f7f4ee" }}>{ex.techniqueUsed}</div>
+                      <div style={{ fontSize: 10, color: "#77736c", marginTop: 2 }}>{ex.promptAuthor} · {ex.phase}</div>
+                    </div>
                   </div>
                   <VerdictBadge verdict={ex.verdict} pending={ex.verdictPending ?? false} score={ex.breakScore} />
                 </div>
-                {/* Prompt */}
-                <div style={{ padding: "14px 16px", borderBottom: "1px solid #2e2d2a" }}>
-                  <div style={{ fontSize: 8, fontWeight: 750, color: "#77736c", letterSpacing: ".12em", marginBottom: 6 }}>ATTACK PROMPT</div>
-                  <p style={{ margin: 0, fontSize: 12, lineHeight: 1.6, color: "#c9c5be", fontFamily: "Georgia, serif" }}>{ex.prompt.length > 280 ? ex.prompt.slice(0, 280) + "…" : ex.prompt}</p>
+
+                {/* Prompt — always visible */}
+                <div style={{ padding: "16px 18px", borderBottom: "1px solid #2e2d2a", display: "block" }}>
+                  <div style={{ fontSize: 9, fontWeight: 750, color: "#99958e", letterSpacing: ".1em", marginBottom: 8, textTransform: "uppercase" }}>Attack Prompt</div>
+                  <p style={{ margin: 0, fontSize: 13, lineHeight: 1.7, color: "#ddd9d2", fontFamily: "Georgia, serif", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                    {ex.prompt}
+                  </p>
                 </div>
-                {/* Response */}
+
+                {/* Response — always visible when present */}
                 {ex.targetResponse && (
-                  <div style={{ padding: "14px 16px", borderBottom: "1px solid #2e2d2a", background: "#1a1a18" }}>
-                    <div style={{ fontSize: 8, fontWeight: 750, color: "#77736c", letterSpacing: ".12em", marginBottom: 6 }}>TARGET RESPONSE</div>
-                    <p style={{ margin: 0, fontSize: 12, lineHeight: 1.6, color: "#a8a49c", fontFamily: "Georgia, serif" }}>{ex.targetResponse.length > 350 ? ex.targetResponse.slice(0, 350) + "…" : ex.targetResponse}</p>
+                  <div style={{ padding: "16px 18px", borderBottom: "1px solid #2e2d2a", background: "#1a1a18", display: "block" }}>
+                    <div style={{ fontSize: 9, fontWeight: 750, color: "#99958e", letterSpacing: ".1em", marginBottom: 8, textTransform: "uppercase" }}>Target Response</div>
+                    <p style={{ margin: 0, fontSize: 13, lineHeight: 1.7, color: "#c9c5be", fontFamily: "Georgia, serif", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                      {ex.targetResponse}
+                    </p>
                   </div>
                 )}
-                {/* Judge */}
+
+                {/* Judge — always visible when present */}
                 {ex.judgeReason && (
-                  <div style={{ padding: "12px 16px", background: (ex.verdict === "full-break" || ex.verdict === "partial-break") ? "#2a1a1a" : "#1a2a1a" }}>
-                    <div style={{ fontSize: 8, fontWeight: 750, color: (ex.verdict === "full-break" || ex.verdict === "partial-break") ? "#e05050" : "#55a265", letterSpacing: ".12em", marginBottom: 4 }}>JUDGE</div>
-                    <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: "#a8a49c" }}>{ex.judgeReason}</p>
+                  <div style={{ padding: "14px 18px", background: (ex.verdict === "full-break" || ex.verdict === "partial-break") ? "#2a1a1a" : "#1a2a1a", display: "block" }}>
+                    <div style={{ fontSize: 9, fontWeight: 750, color: (ex.verdict === "full-break" || ex.verdict === "partial-break") ? "#e05050" : "#55a265", letterSpacing: ".1em", marginBottom: 6, textTransform: "uppercase" }}>Judge Verdict</div>
+                    <p style={{ margin: 0, fontSize: 12, lineHeight: 1.6, color: "#c9c5be" }}>{ex.judgeReason}</p>
                   </div>
                 )}
-                {/* Loading */}
-                {ex.responsePending && (<div style={{ padding: "14px 16px", borderTop: "1px solid #2e2d2a" }}><div className="typing"><i /><i /><i /></div></div>)}
+
+                {/* Loading indicator */}
+                {ex.responsePending && (
+                  <div style={{ padding: "16px 18px", borderTop: "1px solid #2e2d2a", display: "block" }}>
+                    <div className="typing"><i /><i /><i /></div>
+                  </div>
+                )}
               </motion.div>
             ))}
           </AnimatePresence>
@@ -250,10 +265,13 @@ export default function App() {
 
           {/* Overseer Chimes */}
           {chimes.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: "14px 16px", background: "#2a2218", border: "1px solid #4a3a20", borderRadius: 9 }}>
-              <p style={{ margin: "0 0 6px", fontSize: 8, fontWeight: 750, color: "#ff6200", letterSpacing: ".12em" }}>OVERSEER</p>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: "18px 20px", background: "#2a2218", border: "1px solid #5a4a2a", borderRadius: 10, marginTop: 8 }}>
+              <div style={{ fontSize: 9, fontWeight: 750, color: "#ff6200", letterSpacing: ".12em", marginBottom: 10, textTransform: "uppercase" }}>Overseer Notes</div>
               {chimes.slice(-3).map((c, i) => (
-                <p key={i} style={{ margin: "4px 0", fontSize: 11, color: "#c9a86a", lineHeight: 1.5 }}>{c.message}</p>
+                <div key={i} style={{ margin: "0 0 10px", padding: "10px 14px", background: "#33281a", borderRadius: 7, borderLeft: "3px solid #ff6200" }}>
+                  <p style={{ margin: 0, fontSize: 12, color: "#f7f4ee", lineHeight: 1.6 }}>{c.headline}</p>
+                  <p style={{ margin: "4px 0 0", fontSize: 11, color: "#c9a86a", lineHeight: 1.5 }}>{c.message}</p>
+                </div>
               ))}
             </motion.div>
           )}
