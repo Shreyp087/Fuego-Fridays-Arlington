@@ -145,186 +145,133 @@ export default function App() {
   const isComplete = phase === "complete";
   const safeCount = exchanges.filter(e => e.verdict === "safe").length;
   const breakCount = breaks.length;
-
   const phaseColors: Record<RunPhase, string> = {
     ready: "#8e8a82", probing: "#4d9ae0", escalating: "#e09b4d", breaking: "#e05050", complete: "#55a265"
   };
 
   return (
-    <div className="app-shell" style={{ display: "block", marginLeft: 0, background: "#f4f2ed", minHeight: "100vh" }}>
+    <div className="app-shell" style={{ display: "block", marginLeft: 0, background: "#181816", minHeight: "100vh", color: "#f7f4ee" }}>
       {/* Topbar */}
-      <div className="topbar" style={{ height: 56, padding: "0 24px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={() => { resetRun(); setScreen("home"); }} style={{ border: "none", background: "none", color: "#6f6b64", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 650 }}>
-            <RotateCcw style={{ width: 14, height: 14 }} /> Back
+      <div style={{ position: "sticky", top: 0, zIndex: 20, height: 56, padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(24,24,22,.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid #2a2927" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <button onClick={() => { resetRun(); setScreen("home"); }} style={{ border: "none", background: "none", color: "#8e8a82", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 650 }}>
+            <RotateCcw style={{ width: 13, height: 13 }} /> Back
           </button>
-          <span style={{ color: "#ddd" }}>|</span>
+          <div style={{ width: 1, height: 20, background: "#3a3835" }} />
           <strong style={{ fontSize: 13 }}>{persona.name}</strong>
-          <span style={{ fontSize: 11, color: "#8e8a82" }}>{persona.org}</span>
+          <span style={{ fontSize: 11, color: "#77736c" }}>{persona.org}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: phaseColors[phase] }}>
-            {running && <span className="live-dot" style={{ background: phaseColors[phase] }} />}
-            {phase.toUpperCase()}
-          </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: `${phaseColors[phase]}11`, border: `1px solid ${phaseColors[phase]}33` }}>
+            {running && <span style={{ width: 6, height: 6, borderRadius: "50%", background: phaseColors[phase], boxShadow: `0 0 8px ${phaseColors[phase]}` }} />}
+            <span style={{ fontSize: 10, fontWeight: 750, color: phaseColors[phase], letterSpacing: ".06em" }}>{phase.toUpperCase()}</span>
+          </div>
           {running && (
-            <button onClick={() => { if(timer.current) clearTimeout(timer.current); setRunning(false); }} className="secondary-button" style={{ minHeight: 30, fontSize: 10 }}>
-              <Pause style={{ width: 12, height: 12 }} /> Pause
+            <button onClick={() => { if(timer.current) clearTimeout(timer.current); setRunning(false); }} style={{ minHeight: 30, padding: "0 12px", borderRadius: 7, border: "1px solid #3a3835", background: "#222120", color: "#f7f4ee", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+              <Pause style={{ width: 11, height: 11 }} /> Pause
             </button>
           )}
           {!running && !isComplete && exchanges.length > 0 && (
-            <button onClick={() => { setRunning(true); processStep(stepIdx); }} className="primary-button" style={{ minHeight: 30, fontSize: 10 }}>
-              <Play style={{ width: 12, height: 12 }} /> Resume
+            <button onClick={() => { setRunning(true); processStep(stepIdx); }} style={{ minHeight: 30, padding: "0 12px", borderRadius: 7, border: "none", background: "#ff6200", color: "#fff", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+              <Play style={{ width: 11, height: 11 }} /> Resume
             </button>
           )}
         </div>
       </div>
 
       {/* Main Content */}
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "32px 24px" }}>
-        {/* Stats Row */}
-        <div className="evidence-row" style={{ marginBottom: 24 }}>
-          <div><strong>{exchanges.length}</strong><span>ROUNDS</span></div>
-          <div><strong>{safeCount}</strong><span>SAFE</span></div>
-          <div className={breakCount > 0 ? "evidence-alert" : ""}><strong>{breakCount}</strong><span>BREAKS</span></div>
-        </div>
-
-        {/* Agent Status Strip */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-          {AGENTS.map(agent => {
-            const s = statuses[agent.id];
-            const dotColor = s === "active" ? "#55a265" : s === "thinking" ? "#e09b4d" : "#ccc";
-            return (
-              <div key={agent.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "#fff", border: "1px solid #e3dfd7", borderRadius: 7, fontSize: 10, fontWeight: 620 }}>
-                <i style={{ width: 7, height: 7, borderRadius: "50%", background: dotColor, display: "block" }} />
-                {agent.name}
-              </div>
-            );
-          })}
+      <div style={{ maxWidth: 880, margin: "0 auto", padding: "28px 20px 100px" }}>
+        {/* Agents + Stats */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {AGENTS.map(agent => {
+              const s = statuses[agent.id];
+              const dotColor = s === "active" ? "#55a265" : s === "thinking" ? "#ff6200" : "#555";
+              return (
+                <div key={agent.id} style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 11px", background: "#222120", border: `1px solid ${s !== "idle" ? dotColor + "44" : "#333"}`, borderRadius: 6, fontSize: 10, fontWeight: 620, color: s === "idle" ? "#77736c" : "#f7f4ee", transition: "all .3s" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: dotColor, boxShadow: s !== "idle" ? `0 0 6px ${dotColor}` : "none" }} />
+                  {agent.name}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", gap: 20 }}>
+            <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontFamily: "Georgia, serif" }}>{exchanges.length}</div><div style={{ fontSize: 8, fontWeight: 720, color: "#77736c", letterSpacing: ".1em" }}>ROUNDS</div></div>
+            <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontFamily: "Georgia, serif", color: "#55a265" }}>{safeCount}</div><div style={{ fontSize: 8, fontWeight: 720, color: "#77736c", letterSpacing: ".1em" }}>SAFE</div></div>
+            <div style={{ textAlign: "center" }}><div style={{ fontSize: 18, fontFamily: "Georgia, serif", color: breakCount > 0 ? "#e05050" : "#77736c" }}>{breakCount}</div><div style={{ fontSize: 8, fontWeight: 720, color: "#77736c", letterSpacing: ".1em" }}>BREAKS</div></div>
+          </div>
         </div>
 
         {/* Feed */}
-        <div ref={feedRef} style={{ maxHeight: "calc(100vh - 280px)", overflowY: "auto", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div ref={feedRef} style={{ maxHeight: "calc(100vh - 200px)", overflowY: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
           <AnimatePresence initial={false}>
             {exchanges.map(ex => (
-              <motion.div
-                key={ex.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="document-panel"
-                style={{ padding: 0, overflow: "hidden" }}
-              >
-                {/* Exchange Header */}
-                <div style={{ padding: "14px 18px", borderBottom: "1px solid #eeeae4", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <motion.div key={ex.id} initial={{ opacity: 0, y: 16, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} style={{ background: "#1f1f1d", border: "1px solid #2e2d2a", borderRadius: 10, overflow: "hidden" }}>
+                {/* Header */}
+                <div style={{ padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #2e2d2a" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 10, fontWeight: 750, color: "#ff6200" }}>R{ex.round}</span>
-                    <span style={{ fontSize: 11, fontWeight: 620 }}>{ex.techniqueUsed}</span>
+                    <span style={{ width: 28, height: 28, borderRadius: 7, background: "#ff620018", display: "grid", placeItems: "center", fontSize: 10, fontWeight: 800, color: "#ff6200" }}>{ex.round}</span>
+                    <div><div style={{ fontSize: 11, fontWeight: 650 }}>{ex.techniqueUsed}</div><div style={{ fontSize: 9, color: "#77736c", marginTop: 2 }}>{ex.promptAuthor} · {ex.phase}</div></div>
                   </div>
                   <VerdictBadge verdict={ex.verdict} pending={ex.verdictPending ?? false} score={ex.breakScore} />
                 </div>
-
                 {/* Prompt */}
-                <div style={{ padding: "16px 18px", background: "#faf9f7" }}>
-                  <div style={{ fontSize: 9, fontWeight: 720, color: "#9b978f", letterSpacing: ".1em", marginBottom: 6 }}>
-                    {ex.promptAuthor.toUpperCase()} PROMPT
-                  </div>
-                  <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: "#2e2c29", fontFamily: "Georgia, serif" }}>
-                    {ex.prompt.length > 300 ? ex.prompt.slice(0, 300) + "..." : ex.prompt}
-                  </p>
+                <div style={{ padding: "14px 16px", borderBottom: "1px solid #2e2d2a" }}>
+                  <div style={{ fontSize: 8, fontWeight: 750, color: "#77736c", letterSpacing: ".12em", marginBottom: 6 }}>ATTACK PROMPT</div>
+                  <p style={{ margin: 0, fontSize: 12, lineHeight: 1.6, color: "#c9c5be", fontFamily: "Georgia, serif" }}>{ex.prompt.length > 280 ? ex.prompt.slice(0, 280) + "…" : ex.prompt}</p>
                 </div>
-
                 {/* Response */}
                 {ex.targetResponse && (
-                  <div style={{ padding: "16px 18px", borderTop: "1px solid #eeeae4" }}>
-                    <div style={{ fontSize: 9, fontWeight: 720, color: "#9b978f", letterSpacing: ".1em", marginBottom: 6 }}>
-                      TARGET RESPONSE
-                    </div>
-                    <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: "#504d48", fontFamily: "Georgia, serif" }}>
-                      {ex.targetResponse.length > 400 ? ex.targetResponse.slice(0, 400) + "..." : ex.targetResponse}
-                    </p>
+                  <div style={{ padding: "14px 16px", borderBottom: "1px solid #2e2d2a", background: "#1a1a18" }}>
+                    <div style={{ fontSize: 8, fontWeight: 750, color: "#77736c", letterSpacing: ".12em", marginBottom: 6 }}>TARGET RESPONSE</div>
+                    <p style={{ margin: 0, fontSize: 12, lineHeight: 1.6, color: "#a8a49c", fontFamily: "Georgia, serif" }}>{ex.targetResponse.length > 350 ? ex.targetResponse.slice(0, 350) + "…" : ex.targetResponse}</p>
                   </div>
                 )}
-
                 {/* Judge */}
                 {ex.judgeReason && (
-                  <div style={{ padding: "12px 18px", borderTop: "1px solid #eeeae4", background: (ex.verdict === "full-break" || ex.verdict === "partial-break") ? "#fff5f5" : "#f7faf7" }}>
-                    <div style={{ fontSize: 9, fontWeight: 720, color: (ex.verdict === "full-break" || ex.verdict === "partial-break") ? "#d64e21" : "#4d8a58", letterSpacing: ".1em", marginBottom: 4 }}>
-                      JUDGE VERDICT
-                    </div>
-                    <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: "#504d48" }}>
-                      {ex.judgeReason}
-                    </p>
+                  <div style={{ padding: "12px 16px", background: (ex.verdict === "full-break" || ex.verdict === "partial-break") ? "#2a1a1a" : "#1a2a1a" }}>
+                    <div style={{ fontSize: 8, fontWeight: 750, color: (ex.verdict === "full-break" || ex.verdict === "partial-break") ? "#e05050" : "#55a265", letterSpacing: ".12em", marginBottom: 4 }}>JUDGE</div>
+                    <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: "#a8a49c" }}>{ex.judgeReason}</p>
                   </div>
                 )}
-
-                {/* Loading state */}
-                {ex.responsePending && (
-                  <div style={{ padding: "16px 18px", borderTop: "1px solid #eeeae4" }}>
-                    <div className="typing"><i /><i /><i /></div>
-                  </div>
-                )}
+                {/* Loading */}
+                {ex.responsePending && (<div style={{ padding: "14px 16px", borderTop: "1px solid #2e2d2a" }}><div className="typing"><i /><i /><i /></div></div>)}
               </motion.div>
             ))}
           </AnimatePresence>
 
           {/* Empty state */}
           {exchanges.length === 0 && (
-            <div style={{ textAlign: "center", padding: "60px 20px", color: "#8e8a82" }}>
-              <div className="typing" style={{ justifyContent: "center", marginBottom: 12 }}><i /><i /><i /></div>
-              <p style={{ margin: 0, fontSize: 13 }}>Agents initializing...</p>
+            <div style={{ textAlign: "center", padding: "80px 20px" }}>
+              <div className="typing" style={{ justifyContent: "center", marginBottom: 16 }}><i /><i /><i /></div>
+              <p style={{ margin: 0, fontSize: 13, color: "#77736c" }}>Agents initializing attack vectors…</p>
             </div>
           )}
 
           {/* Overseer Chimes */}
           {chimes.length > 0 && (
-            <div style={{ marginTop: 16, padding: "16px 18px", background: "#fff8f2", border: "1px solid #ffe0c2", borderRadius: 9 }}>
-              <p style={{ margin: "0 0 8px", fontSize: 9, fontWeight: 720, color: "#d35a08", letterSpacing: ".1em" }}>OVERSEER NOTES</p>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: "14px 16px", background: "#2a2218", border: "1px solid #4a3a20", borderRadius: 9 }}>
+              <p style={{ margin: "0 0 6px", fontSize: 8, fontWeight: 750, color: "#ff6200", letterSpacing: ".12em" }}>OVERSEER</p>
               {chimes.slice(-3).map((c, i) => (
-                <p key={i} style={{ margin: "4px 0", fontSize: 11, color: "#6d4a2a", lineHeight: 1.5 }}>
-                  {c.message}
-                </p>
+                <p key={i} style={{ margin: "4px 0", fontSize: 11, color: "#c9a86a", lineHeight: 1.5 }}>{c.message}</p>
               ))}
-            </div>
+            </motion.div>
           )}
 
-          {/* Complete Report Summary */}
+          {/* Complete Report */}
           {isComplete && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              style={{ marginTop: 24, padding: "28px 24px", background: "#fff", border: "1px solid #e3dfd7", borderRadius: 12, boxShadow: "0 12px 35px rgba(43,37,25,.045)" }}
-            >
-              <p style={{ margin: "0 0 8px", fontSize: 9, fontWeight: 750, color: "#ff6200", letterSpacing: ".13em" }}>SESSION COMPLETE</p>
-              <h2 style={{ margin: "0 0 16px", fontFamily: "Georgia, serif", fontSize: 28, fontWeight: 400, letterSpacing: "-.03em" }}>
-                Red Team Report — {persona.name}
-              </h2>
-              <div className="evidence-row" style={{ marginBottom: 20 }}>
-                <div><strong>{exchanges.length}</strong><span>TOTAL ROUNDS</span></div>
-                <div><strong>{safeCount}</strong><span>DEFENDED</span></div>
-                <div className={breakCount > 0 ? "evidence-alert" : ""}><strong>{breakCount}</strong><span>BREAKS FOUND</span></div>
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 200, damping: 25 }} style={{ marginTop: 20, padding: "32px 28px", background: "#1f1f1d", border: "1px solid #ff620033", borderRadius: 12 }}>
+              <p className="eyebrow" style={{ marginBottom: 8 }}><span className="live-dot" />SESSION COMPLETE</p>
+              <h2 style={{ margin: "0 0 20px", fontFamily: "Georgia, serif", fontSize: "clamp(24px, 3vw, 34px)", fontWeight: 400, letterSpacing: "-.03em", color: "#f7f4ee" }}>Red Team Report — {persona.name}</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
+                <div style={{ padding: 16, background: "#222120", borderRadius: 8, textAlign: "center" }}><div style={{ fontSize: 24, fontFamily: "Georgia, serif" }}>{exchanges.length}</div><div style={{ fontSize: 9, fontWeight: 720, color: "#77736c", letterSpacing: ".1em", marginTop: 4 }}>ROUNDS</div></div>
+                <div style={{ padding: 16, background: "#1a2a1a", borderRadius: 8, textAlign: "center", border: "1px solid #55a26533" }}><div style={{ fontSize: 24, fontFamily: "Georgia, serif", color: "#55a265" }}>{safeCount}</div><div style={{ fontSize: 9, fontWeight: 720, color: "#55a265", letterSpacing: ".1em", marginTop: 4 }}>DEFENDED</div></div>
+                <div style={{ padding: 16, background: breakCount > 0 ? "#2a1a1a" : "#222120", borderRadius: 8, textAlign: "center", border: breakCount > 0 ? "1px solid #e0505033" : "none" }}><div style={{ fontSize: 24, fontFamily: "Georgia, serif", color: breakCount > 0 ? "#e05050" : "#77736c" }}>{breakCount}</div><div style={{ fontSize: 9, fontWeight: 720, color: breakCount > 0 ? "#e05050" : "#77736c", letterSpacing: ".1em", marginTop: 4 }}>BREAKS</div></div>
               </div>
-
-              {breaks.length > 0 && (
-                <div style={{ marginTop: 16 }}>
-                  <p style={{ margin: "0 0 12px", fontSize: 10, fontWeight: 720, color: "#d64e21" }}>CONFIRMED VULNERABILITIES</p>
-                  {breaks.map((b, i) => (
-                    <div key={i} style={{ padding: "12px 14px", marginBottom: 8, background: "#fef5f3", border: "1px solid #fdd", borderRadius: 8 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "#d64e21", marginBottom: 4 }}>
-                        Round {b.round}: {b.techniqueUsed}
-                      </div>
-                      <div style={{ fontSize: 11, color: "#6d4a3a", lineHeight: 1.5 }}>{b.why} — {b.impact}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
-                <button onClick={() => { resetRun(); setScreen("home"); }} className="secondary-button">
-                  <RotateCcw style={{ width: 12, height: 12 }} /> New Session
-                </button>
-                <button onClick={startRun} className="primary-button">
-                  <Play style={{ width: 12, height: 12 }} /> Run Again
-                </button>
+              {breaks.length > 0 && (<div style={{ marginBottom: 24 }}><p style={{ margin: "0 0 12px", fontSize: 9, fontWeight: 750, color: "#e05050", letterSpacing: ".12em" }}>CONFIRMED VULNERABILITIES</p>{breaks.map((b, i) => (<div key={i} style={{ padding: "14px 16px", marginBottom: 8, background: "#2a1a1a", border: "1px solid #e0505022", borderRadius: 8 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#e05050", marginBottom: 4 }}>Round {b.round} — {b.techniqueUsed}</div><div style={{ fontSize: 11, color: "#a8a49c", lineHeight: 1.55 }}>{b.why}</div><div style={{ fontSize: 10, color: "#77736c", marginTop: 6, fontStyle: "italic" }}>Impact: {b.impact}</div></div>))}</div>)}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => { resetRun(); setScreen("home"); }} style={{ minHeight: 38, padding: "0 16px", borderRadius: 7, border: "1px solid #3a3835", background: "#222120", color: "#f7f4ee", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", gap: 7, cursor: "pointer" }}><RotateCcw style={{ width: 12, height: 12 }} /> New Session</button>
+                <button onClick={() => { resetRun(); startRun(); }} style={{ minHeight: 38, padding: "0 16px", borderRadius: 7, border: "none", background: "#ff6200", color: "#fff", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", gap: 7, cursor: "pointer" }}><Play style={{ width: 12, height: 12 }} /> Run Again</button>
               </div>
             </motion.div>
           )}
